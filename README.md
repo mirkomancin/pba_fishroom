@@ -12,13 +12,24 @@ The Arduino has been used with the following sensors:
 - **DS18B20** Immersion temperature sensor
 - **Netatmo** Environmental sensors
 - **Engage Efergy** Consumption sensors
-
+- **YF-S201** Flow Meter
+ 
 The wiring diagram is as follows
 
 ![diagram](screenshot/diagram.jpg)
 
 To visualize the data instead it has been realized a python script to collect data from various sensors and display them through a dedicated web page
 
+*Main Menu*
+![screenshot](screenshot/menu.jpg)
+
+*"Fotovoltaico" section*
+![screenshot](screenshot/fotovoltaico.jpg)
+
+*"Meteo" section*
+![screenshot](screenshot/meteo.jpg)
+
+*"Monitor Acqua" section*
 ![screenshot](screenshot/screenshot.jpg)
 
 The monitor shows
@@ -28,4 +39,3 @@ The monitor shows
 - Temperature and conductivity in the exchange tank
 - An icon showing if it is raining
 - An icon that lights up in "green" in case there are conditions to stimulate reproduction (low fishroom pressure, rain, low conductivity of the exchange water, low exchange water temperature)
-

@@ -23,6 +23,23 @@ OneWire oneWire(ONE_WIRE_BUS); // Imposta la connessione OneWire
 DallasTemperature ds18b20(&oneWire); // Dichiarazione dell'oggetto sensore
 
 
+//FLOWMETER
+double flow1; 
+double flow1_total; 
+unsigned long currentTime;
+unsigned long lastTime;
+unsigned long pulse_freq1;
+unsigned long pulse_freq1_total;
+const byte interruptPin1 = 22;
+
+double flow2; 
+double flow2_total; 
+unsigned long pulse_freq2;
+unsigned long pulse_freq2_total;
+const byte interruptPin2 = 23;
+
+
+
 void setup()
 {
   Serial.begin(9600);
@@ -47,12 +64,54 @@ void setup()
     }
   }
   ds18b20.begin();
+
+  pinMode(interruptPin1, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(interruptPin1), pulse1, RISING); 
+  currentTime = millis();
+  lastTime = currentTime;
+
+  pinMode(interruptPin2, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(interruptPin2), pulse2, RISING);
+
+  delay(1000);
+  pulse_freq1 = 0;
+  pulse_freq2 = 0;
+  pulse_freq1_total = 0;
+  pulse_freq2_total = 0;
 }
+
+
 
 float conduc=0.0f, dstemp=0.0f, temper=0.0f, mbar=0.0f;
 
 void loop()
 {
+  if (Serial.available() > 0) {
+    int incomingByte = Serial.read();
+
+    if(incomingByte=='R'){
+      pulse_freq1 = 0;
+      pulse_freq2 = 0;
+      pulse_freq1_total = 0;
+      pulse_freq2_total = 0;  
+    }
+  }
+  
+  currentTime = millis();
+  // Every second, calculate and print L/Min
+  if(currentTime >= (lastTime + 1000))
+  {
+     lastTime = currentTime; 
+     flow1 = (pulse_freq1 / 7.5); 
+     flow1_total = (pulse_freq1_total * .00225); 
+     pulse_freq1 = 0;
+
+     flow2 = (pulse_freq2 / 7.5); 
+     flow2_total = (pulse_freq2_total * .00225); 
+     pulse_freq2 = 0;
+  }
+  
+  
   //KS0429
   static unsigned long analogSampleTimepoint = millis();
   if (millis() - analogSampleTimepoint > 40U) //every 40 milliseconds,read the analog value from the ADC
@@ -125,8 +184,6 @@ void loop()
     printDS18B20 = millis();
     ds18b20.requestTemperatures();
     float celsius = ds18b20.getTempCByIndex(0);
-    //Serial.print("DS18B20:");
-    //Serial.println(celsius);
     dstemp = celsius;
   }
 
@@ -142,7 +199,19 @@ void loop()
     Serial.print(temper,2);
     Serial.print("#");
     Serial.print(mbar,0);
+    Serial.print("#");
+    Serial.print(flow1, 2); 
+    Serial.print("#");
+    Serial.print(flow1_total, 2); 
+    Serial.print("#");
+    Serial.print(flow2, 2); 
+    Serial.print("#");
+    Serial.print(flow2_total, 2); 
+    
     Serial.println();
+    
+    pulse_freq1 = 0; 
+    pulse_freq2 = 0; 
   }
 }
 
@@ -173,4 +242,17 @@ int getMedianNum(int bArray[], int iFilterLen)
   else
     bTemp = (bTab[iFilterLen / 2] + bTab[iFilterLen / 2 - 1]) / 2;
   return bTemp;
+}
+
+
+void pulse1() 
+{
+  pulse_freq1++;
+  pulse_freq1_total++;
+}
+
+void pulse2() 
+{
+  pulse_freq2++;
+  pulse_freq2_total++;
 }
